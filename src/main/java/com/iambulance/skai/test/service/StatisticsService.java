@@ -1,7 +1,7 @@
 package com.iambulance.skai.test.service;
 
 import com.iambulance.skai.test.model.ApiRequest;
-import com.iambulance.skai.test.utils.RequestValidator;
+import com.iambulance.skai.test.utils.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -38,7 +38,7 @@ public class StatisticsService {
         Map<String, Integer> requestsPerSecondMap = new HashMap<>();
 
         for (ApiRequest apiRequest : apiRequests) {
-            if (RequestValidator.isValidDate(apiRequest.getData())){
+            if (DateValidator.isValidDate(apiRequest.getData())){
                 String timestamp = apiRequest.getData().split("-")[0].trim();
                 requestsPerSecondMap.put(timestamp, requestsPerSecondMap.getOrDefault(timestamp, 0) + 1);
             } else {
@@ -52,12 +52,12 @@ public class StatisticsService {
     }
 
     private void appendCountersReport(List<ApiRequest> apiRequests, StringBuilder report) {
-        Map<String, Integer> countersMap = new HashMap<>();
+        Map<String, String> countersMap = new HashMap<>();
         int totalRows = apiRequests.size();
         int validRows = (int) apiRequests.stream().filter(this::isValidRow).count();
-        int processedTime = apiRequests.size();
-        countersMap.put("Total rows", totalRows);
-        countersMap.put("Valid rows", validRows);
+        String processedTime = TimeCounter.getTimeInterval(TimeCounter.getMinDate(ListConverter.getDateArrayList(apiRequests), TimeCounter.DD_MM_YYYY_HH_MM_SSZ), TimeCounter.getMaxDate(ListConverter.getDateArrayList(apiRequests), TimeCounter.DD_MM_YYYY_HH_MM_SSZ));
+        countersMap.put("Total rows", String.valueOf(totalRows));
+        countersMap.put("Valid rows", String.valueOf(validRows));
         countersMap.put("Processed total time", processedTime);
 
         report.append("---- Counters ----\n");
@@ -65,11 +65,13 @@ public class StatisticsService {
         report.append("------------------\n");
     }
 
+
+
     private boolean isValidRow(ApiRequest apiRequest) {
-        return RequestValidator.isValidIP(apiRequest.getIp())
-                && RequestValidator.isValidDate(apiRequest.getData())
+        return IPValidator.isValidIP(apiRequest.getIp())
+                && DateValidator.isValidDate(apiRequest.getData())
                 && RequestValidator.isValidRequestMethod(apiRequest.getRequestMethod())
-                && RequestValidator.isValidURI(apiRequest.getUri())
+                && URIValidator.isValidURI(apiRequest.getUri())
                 && RequestValidator.isValidRequestStatus(String.valueOf(apiRequest.getRequestStatus()));
     }
 }
