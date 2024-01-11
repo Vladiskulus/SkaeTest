@@ -28,7 +28,7 @@ dependencies {
 	implementation ("javax.servlet:javax.servlet-api:4.0.1")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-web") // Додайте цей рядок
+	testImplementation("org.springframework.boot:spring-boot-starter-web")
 
 }
 

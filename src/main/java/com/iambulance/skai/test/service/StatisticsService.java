@@ -5,6 +5,7 @@ import com.iambulance.skai.test.utils.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StatisticsService {
@@ -20,32 +21,25 @@ public class StatisticsService {
         return report.toString();
     }
 
-    private void appendTopNURIsReport(List<ApiRequest> apiRequests, StringBuilder report){
+    private void appendTopNURIsReport(List<ApiRequest> apiRequests, StringBuilder report) {
         report.append("---- Top URIs ----\n");
-        Map<String, Integer> uriRequestMethodCountMap = new HashMap<>();
-
-        for (ApiRequest apiRequest : apiRequests) {
-            String key = apiRequest.getUri() + " - " + apiRequest.getRequestMethod();
-            uriRequestMethodCountMap.put(key, uriRequestMethodCountMap.getOrDefault(key, 0) + 1);
-        }
-        for (Map.Entry<String, Integer> entry : uriRequestMethodCountMap.entrySet()) {
-            report.append(entry.getKey()).append(" ").append(entry.getValue()).append("\n");
-        }
+        Map<String, Long> uriRequestMethodCountMap = apiRequests.stream()
+                .collect(Collectors.groupingBy(
+                        apiRequest -> apiRequest.getUri() + " - " + apiRequest.getRequestMethod(),
+                        Collectors.counting()
+                ));
+        uriRequestMethodCountMap.forEach((key, value) -> report.append(key).append(" ").append(value).append("\n"));
         report.append("------------------\n");
     }
 
     private void appendRequestsPerSecondReport(List<ApiRequest> apiRequests, StringBuilder report) {
-        Map<String, Integer> requestsPerSecondMap = new HashMap<>();
-
-        for (ApiRequest apiRequest : apiRequests) {
-            if (DateValidator.isValidDate(apiRequest.getData())){
-                String timestamp = apiRequest.getData().split("-")[0].trim();
-                requestsPerSecondMap.put(timestamp, requestsPerSecondMap.getOrDefault(timestamp, 0) + 1);
-            } else {
-                requestsPerSecondMap.put("Not valid", requestsPerSecondMap.getOrDefault("Not valid", 0) + 1);
-            }
-        }
         report.append("---- Requests per second ----\n");
+        Map<String, Integer> requestsPerSecondMap = apiRequests.stream()
+                .filter(apiRequest -> DateValidator.isValidDate(apiRequest.getData()))
+                .collect(Collectors.groupingBy(
+                        apiRequest -> apiRequest.getData().split("-")[0].trim(),
+                        Collectors.summingInt(e -> 1)
+                ));
         requestsPerSecondMap.forEach((timestamp, count) ->
                 report.append(timestamp).append(" - ").append(count).append(" request").append(count > 1 ? "s" : "").append("\n"));
         report.append("------------------\n");

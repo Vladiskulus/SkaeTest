@@ -18,7 +18,14 @@ public class ApiService {
             String[] line;
             while ((line = reader.readNext()) != null) {
                 if (line.length == 5) {
-                    apiRequests.add(new ApiRequest(line[0], line[1],line[2], line[3], Integer.parseInt(line[4])));
+                    apiRequests.add(ApiRequest.builder()
+                            .ip(line[0])
+                            .data(line[1])
+                            .requestMethod(line[2])
+                            .uri(line[3])
+                            .requestStatus(Integer.parseInt(line[4]))
+                            .build()
+                    );
                 }
             }
         } catch (Exception e) {

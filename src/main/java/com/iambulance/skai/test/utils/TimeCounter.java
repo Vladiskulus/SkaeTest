@@ -9,14 +9,12 @@ public class TimeCounter {
 
     public static String DD_MM_YYYY_HH_MM_SSZ = "dd/MM/yyyy:HH:mm:ssZ";
 
-    private static Date textToDate(String text, String dateFormat){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
+    private static Date textToDate(String date, String dateFormat) {
         try {
-            return simpleDateFormat.parse(text);
-        } catch (ParseException e){
-            e.printStackTrace();
+            return new SimpleDateFormat(dateFormat).parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException("Failed to parse date: " + date, e);
         }
-        return null;
     }
 
     public static String getTimeInterval(Date startDate, Date endDate){
@@ -27,35 +25,27 @@ public class TimeCounter {
             long minutes = seconds / 60;
             long hours = minutes / 60;
             if (hours > 0){
-                sb.append(hours + " hours, ");
+                sb.append(hours).append(" hours, ");
             }
             if (minutes > 0) {
-                sb.append(minutes % 60 + " minutes, ");
+                sb.append(minutes % 60).append(" minutes, ");
             }
-            sb.append(seconds % 60 + " seconds.");
+            sb.append(seconds % 60).append(" seconds.");
         }
         return sb.toString();
     }
 
-    public static Date getMinDate(List<String> listOfDates, String dateFormat){
-        Date minTime = null;
-        for (String date : listOfDates){
-            Date currentTime = textToDate(date, dateFormat);
-            if (minTime == null || currentTime.before(minTime)){
-                minTime = currentTime;
-            }
-        }
-        return minTime;
+    public static Date getMinDate(List<String> listOfDates, String dateFormat) {
+        return listOfDates.stream()
+                .map(date -> textToDate(date, dateFormat))
+                .reduce(null, (minDate, currentDate) ->
+                        (minDate == null || currentDate.before(minDate)) ? currentDate : minDate);
     }
 
-    public static Date getMaxDate(List<String> listOfDates, String dateFormat){
-        Date maxTime = null;
-        for (String date : listOfDates){
-            Date currentTime = textToDate(date, dateFormat);
-            if (maxTime == null || currentTime.after(maxTime)){
-                maxTime = currentTime;
-            }
-        }
-        return maxTime;
+    public static Date getMaxDate(List<String> listOfDates, String dateFormat) {
+        return listOfDates.stream()
+                .map(date -> textToDate(date, dateFormat))
+                .reduce(null, (maxDate, currentDate) ->
+                        (maxDate == null || currentDate.after(maxDate)) ? currentDate : maxDate);
     }
 }

@@ -4,7 +4,7 @@ import lombok.*;
 
 @Setter
 @Getter
-@AllArgsConstructor
+@Builder
 @EqualsAndHashCode
 public class ApiRequest {
 
